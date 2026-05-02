@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Druck und Druckarten am Kolbenmodell</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-soft: #eef3f7;
+      --line: #c9d2dc;
+      --line-strong: #596775;
+      --text: #1f2933;
+      --muted: #667789;
+      --accent: #1769aa;
+      --danger: #d71920;
+      --ok: #1f8a4c;
+      --under: #1769aa;
+      --warn: #c05621;
+      --shadow: 0 12px 30px rgba(31, 41, 51, 0.08);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 24px auto;
+    }
+
+    header {
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.45rem, 2.6vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 850px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(310px, 0.85fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .model-panel {
+      padding: 18px;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-title {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .svg-wrap {
+      flex: 1;
+      min-height: 390px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: linear-gradient(180deg, #fbfcfd, #edf2f6);
+      overflow: hidden;
+    }
+
+    svg {
+      width: 100%;
+      max-width: 740px;
+      height: auto;
+      display: block;
+    }
+
+    .controls-panel {
+      padding: 18px;
+    }
+
+    .control-group {
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .control-group:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .control-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    label {
+      font-weight: 700;
+    }
+
+    .value-badge {
+      min-width: 92px;
+      text-align: right;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .hint {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .measurements {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      background: var(--surface-soft);
+      min-height: 76px;
+    }
+
+    .metric dt {
+      margin: 0 0 5px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .metric dd {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .state-box {
+      margin-top: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      padding: 12px;
+      font-weight: 700;
+    }
+
+    .state-box.over {
+      color: #8d1717;
+      background: #fff0f0;
+      border-color: #efb3b3;
+    }
+
+    .state-box.under {
+      color: #0f4f84;
+      background: #edf6ff;
+      border-color: #a9d1f2;
+    }
+
+    .state-box.equal {
+      color: #19633b;
+      background: #eef9f2;
+      border-color: #a9ddb9;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 14px;
+      border: 1px solid #0f568c;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #ffffff;
+      font: inherit;
+      font-weight: 700;
+      padding: 11px 14px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #12598f;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.75fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .interpretation,
+    .tasks {
+      padding: 18px;
+    }
+
+    .interpretation-text {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .formula-line {
+      margin: 12px 0 0;
+      padding: 10px 12px;
+      border-left: 4px solid var(--accent);
+      background: var(--surface-soft);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    .svg-label {
+      font-size: 18px;
+      fill: #111827;
+    }
+
+    .svg-small {
+      font-size: 15px;
+      fill: #334155;
+    }
+
+    .svg-number {
+      font-size: 14px;
+      fill: #334155;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #forceLabel {
+      fill: var(--danger);
+    }
+
+    @media (max-width: 860px) {
+      main {
+        width: min(100% - 20px, 680px);
+        margin-top: 14px;
+      }
+
+      .workspace,
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .model-panel {
+        min-height: auto;
+      }
+
+      .svg-wrap {
+        min-height: 300px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .measurements {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Druck und Druckarten am Kolbenmodell</h1>
+      <p class="subtitle">
+        Verändere Kolbenposition und Kolbenfläche. Beobachte, wie sich Volumen, Druck und die berechnete Haltekraft ändern.
+      </p>
+    </header>
+
+    <section class="workspace" aria-label="Interaktives Kolbenmodell">
+      <article class="panel model-panel">
+        <h2 class="panel-title">Interaktive Fachskizze</h2>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 760 470" role="img" aria-labelledby="svgTitle svgDesc">
+            <title id="svgTitle">Kolbenmodell mit Gasraum, Kolben, Kraftpfeil und Flächenmarkierung</title>
+            <desc id="svgDesc">Links befindet sich der Gasraum. Rechts befindet sich ein beweglicher Kolben, auf den eine berechnete Haltekraft wirkt.</desc>
+
+            <defs>
+              <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#d71920"></path>
+              </marker>
+              <marker id="arrow-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#596775"></path>
+              </marker>
+              <linearGradient id="gasGradient" x1="0" x2="1">
+                <stop offset="0%" stop-color="#cfeefa"></stop>
+                <stop offset="100%" stop-color="#93cfe7"></stop>
+              </linearGradient>
+              <linearGradient id="metalGradient" x1="0" x2="1">
+                <stop offset="0%" stop-color="#c9d2dc"></stop>
+                <stop offset="48%" stop-color="#f8fafc"></stop>
+                <stop offset="100%" stop-color="#8795a3"></stop>
+              </linearGradient>
+            </defs>
+
+            <!-- Fester technischer Rahmen der Skizze -->
+            <rect x="35" y="70" width="520" height="290" fill="#aebbc8" stroke="#2f3a45" stroke-width="4"></rect>
+            <rect id="gasChamberOutline" x="70" y="105" width="430" height="220" fill="#dbe8f1" stroke="#2f3a45" stroke-width="3"></rect>
+
+            <!-- Gasraum: Breite und Höhe werden per JavaScript aktualisiert. -->
+            <rect id="gasRoom" x="72" y="107" width="260" height="216" fill="url(#gasGradient)" opacity="0.95"></rect>
+            <g id="gasParticles" fill="#226d8f" opacity="0.65">
+              <circle class="particle" cx="110" cy="150" r="4"></circle>
+              <circle class="particle" cx="160" cy="240" r="3"></circle>
+              <circle class="particle" cx="220" cy="185" r="4"></circle>
+              <circle class="particle" cx="275" cy="285" r="3"></circle>
+              <circle class="particle" cx="320" cy="145" r="3"></circle>
+              <circle class="particle" cx="360" cy="235" r="4"></circle>
+            </g>
+
+            <!-- Kolben und Kolbenstange -->
+            <g id="pistonAssembly">
+              <rect id="piston" x="330" y="105" width="28" height="220" fill="url(#metalGradient)" stroke="#2f3a45" stroke-width="3"></rect>
+              <rect id="rod" x="358" y="210" width="210" height="28" fill="url(#metalGradient)" stroke="#596775" stroke-width="2"></rect>
+              <line id="rodHighlight" x1="365" y1="218" x2="560" y2="218" stroke="#ffffff" stroke-width="3" opacity="0.75"></line>
+            </g>
+
+            <!-- Druckraum rechts vom Kolben -->
+            <rect id="pressureSpace" x="360" y="108" width="140" height="214" fill="#ffffff" opacity="0.42" stroke="#596775" stroke-width="2"></rect>
+
+            <!-- Kraftpfeil: Länge und Richtung ergeben sich aus der berechneten Haltekraft. -->
+            <line id="forceArrow" x1="510" y1="224" x2="360" y2="224" stroke="#d71920" stroke-width="8" marker-end="url(#arrow-red)"></line>
+            <text id="forceLabel" x="420" y="198" class="svg-label" fill="#d71920" font-style="italic">F_H</text>
+
+            <!-- Markierung der wirksamen Kolbenfläche A -->
+            <line id="areaLine" x1="330" y1="112" x2="330" y2="318" stroke="#111827" stroke-width="2"></line>
+            <line id="areaTickTop" x1="318" y1="112" x2="342" y2="112" stroke="#111827" stroke-width="2"></line>
+            <line id="areaTickBottom" x1="318" y1="318" x2="342" y2="318" stroke="#111827" stroke-width="2"></line>
+            <text id="areaLabel" x="280" y="115" class="svg-label" font-style="italic">A</text>
+
+            <!-- Beschriftungen mit Führungslinien -->
+            <text id="gasPressureLabel" x="116" y="215" class="svg-label">Druck p</text>
+            <text id="gasPortionLabel" x="92" y="292" class="svg-label">Gasportion</text>
+            <line id="pistonGuide" x1="515" y1="142" x2="620" y2="155" stroke="#596775" stroke-width="2" marker-end="url(#arrow-gray)"></line>
+            <text x="625" y="162" class="svg-label">Kolben</text>
+            <line id="pressureGuide" x1="465" y1="270" x2="620" y2="280" stroke="#596775" stroke-width="2" marker-end="url(#arrow-gray)"></line>
+            <text x="625" y="287" class="svg-label">Druck-</text>
+            <text x="625" y="310" class="svg-label">raum</text>
+
+            <!-- Livewerte direkt in der Skizze -->
+            <text id="svgVolumeText" x="72" y="390" class="svg-small">V = 6,0 L</text>
+            <text id="svgPressureText" x="72" y="415" class="svg-small">p_abs = 1,00 bar</text>
+            <text id="svgFormulaText" x="380" y="390" class="svg-number">F_H = Δp · A</text>
+          </svg>
+        </div>
+      </article>
+
+      <aside class="panel controls-panel" aria-label="Regler und Messwerte">
+        <h2 class="panel-title">Regler und Messwerte</h2>
+
+        <div class="control-group">
+          <div class="control-head">
+            <label for="positionSlider">Kolbenposition</label>
+            <span class="value-badge" id="positionValue">50 %</span>
+          </div>
+          <input id="positionSlider" type="range" min="0" max="100" step="1" value="50">
+          <p class="hint">Links: größeres Volumen. Rechts: kleineres Volumen.</p>
+        </div>
+
+        <div class="control-group">
+          <div class="control-head">
+            <strong>Haltekraft F_H</strong>
+            <span class="value-badge" id="forceValue">0 N</span>
+          </div>
+          <p class="hint">Die Kraft wird aus der Druckdifferenz berechnet: F_H = Δp · A.</p>
+        </div>
+
+        <div class="control-group">
+          <div class="control-head">
+            <label for="areaSlider">Fläche A</label>
+            <span class="value-badge" id="areaValue">20 cm²</span>
+          </div>
+          <input id="areaSlider" type="range" min="10" max="40" step="1" value="20">
+          <p class="hint">Bei gleicher Druckdifferenz ist für eine größere Fläche mehr Haltekraft nötig.</p>
+        </div>
+
+        <dl class="measurements">
+          <div class="metric">
+            <dt>Volumen V</dt>
+            <dd id="volumeDisplay">6,0 L</dd>
+          </div>
+          <div class="metric">
+            <dt>Druckdifferenz Δp</dt>
+            <dd id="pressureDisplay">0,10 bar</dd>
+          </div>
+          <div class="metric">
+            <dt>Atmosphärendruck p_atm</dt>
+            <dd id="atmDisplay">1,00 bar</dd>
+          </div>
+          <div class="metric">
+            <dt>Absolutdruck p_abs</dt>
+            <dd id="absoluteDisplay">1,10 bar</dd>
+          </div>
+          <div class="metric">
+            <dt>Haltekraft F_H</dt>
+            <dd id="holdingForceDisplay">0 N</dd>
+          </div>
+        </dl>
+
+        <div id="stateBox" class="state-box over" aria-live="polite">Überdruck</div>
+        <button id="resetButton" type="button">Ausgangszustand wiederherstellen</button>
+      </aside>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="panel interpretation">
+        <h2 class="panel-title">Automatische fachliche Deutung</h2>
+        <p id="interpretationText" class="interpretation-text"></p>
+        <div id="formulaLine" class="formula-line"></div>
+      </article>
+
+      <article class="panel tasks">
+        <h2 class="panel-title">Arbeitsaufträge</h2>
+        <ol>
+          <li>Stelle einen deutlichen Überdruck ein und beschreibe, wie sich die Haltekraft verändert.</li>
+          <li>Vergrößere die Kolbenfläche A bei gleicher Kolbenstellung. Erkläre die Änderung mit F_H = Δp · A.</li>
+          <li>Bewege den Kolben nach links und nach rechts. Formuliere den Zusammenhang zwischen Volumen V und Gasdruck.</li>
+        </ol>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    /*
+      Didaktisches Kolbenmodell:
+      - Die Kolbenposition bestimmt das Volumen V.
+      - Aus der Volumenänderung ergibt sich bei angenommener konstanter Temperatur der Gasdruck.
+      - Δp ist der Druckunterschied zwischen Gasraum und Atmosphäre.
+      - Die erforderliche Haltekraft wird daraus berechnet: F_H = Δp · A.
+    */
+
+    const STANDARDWERTE = {
+      positionProzent: 50,
+      flaecheCm2: 20
+    };
+
+    const ATM_DRUCK_BAR = 1.0;
+    const AUSGANGS_VOLUMEN_LITER = 6.0;
+
+    // Geometrie des SVG-Modells. Die Werte sind bewusst zentral gesammelt.
+    const svgGeometrie = {
+      gasX: 72,
+      kammerY: 107,
+      kammerHoehe: 216,
+      minGasBreite: 150,
+      maxGasBreite: 405,
+      kolbenBreite: 28,
+      kolbenStangeLaenge: 210,
+      stangenHoehe: 28,
+      mittellinieY: 224,
+      ausgangsGasBreite: null
+    };
+
+    const elemente = {
+      positionSlider: document.querySelector("#positionSlider"),
+      areaSlider: document.querySelector("#areaSlider"),
+      resetButton: document.querySelector("#resetButton"),
+      positionValue: document.querySelector("#positionValue"),
+      forceValue: document.querySelector("#forceValue"),
+      areaValue: document.querySelector("#areaValue"),
+      volumeDisplay: document.querySelector("#volumeDisplay"),
+      pressureDisplay: document.querySelector("#pressureDisplay"),
+      atmDisplay: document.querySelector("#atmDisplay"),
+      absoluteDisplay: document.querySelector("#absoluteDisplay"),
+      holdingForceDisplay: document.querySelector("#holdingForceDisplay"),
+      stateBox: document.querySelector("#stateBox"),
+      interpretationText: document.querySelector("#interpretationText"),
+      formulaLine: document.querySelector("#formulaLine"),
+      gasRoom: document.querySelector("#gasRoom"),
+      piston: document.querySelector("#piston"),
+      rod: document.querySelector("#rod"),
+      rodHighlight: document.querySelector("#rodHighlight"),
+      pressureSpace: document.querySelector("#pressureSpace"),
+      forceArrow: document.querySelector("#forceArrow"),
+      forceLabel: document.querySelector("#forceLabel"),
+      areaLine: document.querySelector("#areaLine"),
+      areaTickTop: document.querySelector("#areaTickTop"),
+      areaTickBottom: document.querySelector("#areaTickBottom"),
+      areaLabel: document.querySelector("#areaLabel"),
+      pistonGuide: document.querySelector("#pistonGuide"),
+      pressureGuide: document.querySelector("#pressureGuide"),
+      gasParticles: document.querySelector("#gasParticles"),
+      svgVolumeText: document.querySelector("#svgVolumeText"),
+      svgPressureText: document.querySelector("#svgPressureText"),
+      svgFormulaText: document.querySelector("#svgFormulaText")
+    };
+
+    svgGeometrie.ausgangsGasBreite = berechneGasBreite(STANDARDWERTE.positionProzent);
+
+    function formatiereZahl(wert, stellen = 2) {
+      return wert.toLocaleString("de-DE", {
+        minimumFractionDigits: stellen,
+        maximumFractionDigits: stellen
+      });
+    }
+
+    function berechneGasBreite(positionProzent) {
+      const anteil = positionProzent / 100;
+      return svgGeometrie.maxGasBreite - anteil * (svgGeometrie.maxGasBreite - svgGeometrie.minGasBreite);
+    }
+
+    function berechneFlaechenMarkierung(flaecheCm2) {
+      // Die Markierung ist eine anschauliche Skalierung der wirksamen Fläche A.
+      const anteil = (flaecheCm2 - 10) / 30;
+      return 150 + anteil * 80;
+    }
+
+    function berechneModellwerte() {
+      const positionProzent = Number(elemente.positionSlider.value);
+      const flaecheCm2 = Number(elemente.areaSlider.value);
+
+      const gasBreite = berechneGasBreite(positionProzent);
+      const laengenFaktor = gasBreite / svgGeometrie.ausgangsGasBreite;
+      const volumenLiter = AUSGANGS_VOLUMEN_LITER * laengenFaktor;
+
+      /*
+        Vereinfachte Volumenwirkung:
+        Bei kleinerem Volumen steigt der Gasdruck, bei größerem Volumen sinkt er.
+        Der Ausgangszustand ist V0 bei p_atm = 1,0 bar.
+      */
+      const absolutdruckBar = Math.max(0.05, ATM_DRUCK_BAR * (AUSGANGS_VOLUMEN_LITER / volumenLiter));
+      const differenzdruckBar = absolutdruckBar - ATM_DRUCK_BAR;
+
+      /*
+        Umrechnung F_H = Δp · A:
+        Δp liegt in bar vor, A in cm².
+        1 bar = 100000 Pa und 1 cm² = 0,0001 m².
+        Daraus folgt: F_N = Δp_bar · A_cm² · 10.
+      */
+      const haltekraftNewton = differenzdruckBar * flaecheCm2 * 10;
+
+      return {
+        positionProzent,
+        flaecheCm2,
+        gasBreite,
+        volumenLiter,
+        differenzdruckBar,
+        haltekraftNewton,
+        absolutdruckBar
+      };
+    }
+
+    function bestimmeDruckart(differenzdruckBar) {
+      const toleranz = 0.04;
+      if (differenzdruckBar > toleranz) {
+        return {
+          klasse: "over",
+          titel: "Überdruck",
+          text: "Der absolute Gasdruck ist größer als der Atmosphärendruck."
+        };
+      }
+      if (differenzdruckBar < -toleranz) {
+        return {
+          klasse: "under",
+          titel: "Unterdruck",
+          text: "Der absolute Gasdruck ist kleiner als der Atmosphärendruck."
+        };
+      }
+      return {
+        klasse: "equal",
+        titel: "Druckgleichgewicht",
+        text: "Der absolute Gasdruck liegt ungefähr beim Atmosphärendruck."
+      };
+    }
+
+    function aktualisiereSvg(werte) {
+      const kolbenX = svgGeometrie.gasX + werte.gasBreite;
+      const kolbenHoehe = svgGeometrie.kammerHoehe;
+      const kolbenY = svgGeometrie.mittellinieY - kolbenHoehe / 2;
+      const flaechenMarkierung = berechneFlaechenMarkierung(werte.flaecheCm2);
+      const flaechenMarkierungY = svgGeometrie.mittellinieY - flaechenMarkierung / 2;
+      const stangeX = kolbenX + svgGeometrie.kolbenBreite;
+      const stangeY = svgGeometrie.mittellinieY - svgGeometrie.stangenHoehe / 2;
+      const kraftBetrag = Math.abs(werte.haltekraftNewton);
+      const kraftLaenge = kraftBetrag < 0.5 ? 1 : 45 + Math.min(kraftBetrag * 0.9, 170);
+      const kraftWirktNachLinks = werte.haltekraftNewton >= 0;
+
+      elemente.gasRoom.setAttribute("width", werte.gasBreite);
+      elemente.gasRoom.setAttribute("y", kolbenY);
+      elemente.gasRoom.setAttribute("height", kolbenHoehe);
+
+      elemente.piston.setAttribute("x", kolbenX);
+      elemente.piston.setAttribute("y", kolbenY);
+      elemente.piston.setAttribute("height", kolbenHoehe);
+
+      elemente.rod.setAttribute("x", stangeX);
+      elemente.rod.setAttribute("y", stangeY);
+      elemente.rod.setAttribute("width", svgGeometrie.kolbenStangeLaenge);
+
+      elemente.rodHighlight.setAttribute("x1", stangeX + 8);
+      elemente.rodHighlight.setAttribute("x2", stangeX + svgGeometrie.kolbenStangeLaenge - 10);
+
+      elemente.pressureSpace.setAttribute("x", stangeX + 2);
+      elemente.pressureSpace.setAttribute("y", kolbenY + 3);
+      elemente.pressureSpace.setAttribute("width", Math.max(40, 500 - stangeX));
+      elemente.pressureSpace.setAttribute("height", kolbenHoehe - 6);
+
+      if (kraftWirktNachLinks) {
+        elemente.forceArrow.setAttribute("x1", stangeX + kraftLaenge);
+        elemente.forceArrow.setAttribute("x2", stangeX + 8);
+        elemente.forceLabel.setAttribute("x", stangeX + kraftLaenge / 2 - 16);
+      } else {
+        elemente.forceArrow.setAttribute("x1", stangeX + 8);
+        elemente.forceArrow.setAttribute("x2", stangeX + kraftLaenge);
+        elemente.forceLabel.setAttribute("x", stangeX + kraftLaenge / 2 - 16);
+      }
+      elemente.forceArrow.setAttribute("opacity", kraftBetrag < 0.5 ? "0.2" : "1");
+      elemente.forceLabel.setAttribute("opacity", kraftBetrag < 0.5 ? "0.2" : "1");
+
+      elemente.areaLine.setAttribute("x1", kolbenX - 5);
+      elemente.areaLine.setAttribute("x2", kolbenX - 5);
+      elemente.areaLine.setAttribute("y1", flaechenMarkierungY);
+      elemente.areaLine.setAttribute("y2", flaechenMarkierungY + flaechenMarkierung);
+      elemente.areaTickTop.setAttribute("x1", kolbenX - 17);
+      elemente.areaTickTop.setAttribute("x2", kolbenX + 7);
+      elemente.areaTickTop.setAttribute("y1", flaechenMarkierungY);
+      elemente.areaTickTop.setAttribute("y2", flaechenMarkierungY);
+      elemente.areaTickBottom.setAttribute("x1", kolbenX - 17);
+      elemente.areaTickBottom.setAttribute("x2", kolbenX + 7);
+      elemente.areaTickBottom.setAttribute("y1", flaechenMarkierungY + flaechenMarkierung);
+      elemente.areaTickBottom.setAttribute("y2", flaechenMarkierungY + flaechenMarkierung);
+      elemente.areaLabel.setAttribute("x", kolbenX - 55);
+      elemente.areaLabel.setAttribute("y", flaechenMarkierungY + 22);
+
+      elemente.pistonGuide.setAttribute("x1", stangeX + 80);
+      elemente.pistonGuide.setAttribute("y1", kolbenY + 42);
+      elemente.pistonGuide.setAttribute("x2", kolbenX + 18);
+      elemente.pistonGuide.setAttribute("y2", kolbenY + 24);
+
+      elemente.pressureGuide.setAttribute("x1", stangeX + 85);
+      elemente.pressureGuide.setAttribute("y1", kolbenY + kolbenHoehe - 52);
+      elemente.pressureGuide.setAttribute("x2", stangeX + 18);
+      elemente.pressureGuide.setAttribute("y2", kolbenY + kolbenHoehe - 35);
+
+      // Die Teilchen werden in den sichtbaren Gasraum gestaucht, damit der Volumeneffekt erkennbar wird.
+      const teilchen = elemente.gasParticles.querySelectorAll(".particle");
+      teilchen.forEach((teilchenElement, index) => {
+        const spalte = index % 3;
+        const zeile = Math.floor(index / 3);
+        const x = svgGeometrie.gasX + 38 + spalte * (werte.gasBreite - 76) / 2;
+        const y = kolbenY + 42 + zeile * (kolbenHoehe - 84);
+        teilchenElement.setAttribute("cx", x);
+        teilchenElement.setAttribute("cy", y);
+      });
+    }
+
+    function aktualisiereAnzeige() {
+      const werte = berechneModellwerte();
+      const druckart = bestimmeDruckart(werte.differenzdruckBar);
+      const haltekraftBetrag = Math.abs(werte.haltekraftNewton);
+      const kraftrichtung = werte.haltekraftNewton > 0.5
+        ? "nach links"
+        : werte.haltekraftNewton < -0.5
+          ? "nach rechts"
+          : "keine Richtung";
+      const krafthinweis = kraftrichtung === "keine Richtung"
+        ? "praktisch keine Haltekraft erforderlich"
+        : `eine Haltekraft von ${formatiereZahl(haltekraftBetrag, 0)} N ${kraftrichtung} erforderlich`;
+
+      elemente.positionValue.textContent = `${werte.positionProzent} %`;
+      elemente.forceValue.textContent = `${formatiereZahl(haltekraftBetrag, 0)} N`;
+      elemente.areaValue.textContent = `${werte.flaecheCm2} cm²`;
+
+      elemente.volumeDisplay.textContent = `${formatiereZahl(werte.volumenLiter, 1)} L`;
+      elemente.pressureDisplay.textContent = `${formatiereZahl(werte.differenzdruckBar, 2)} bar`;
+      elemente.atmDisplay.textContent = `${formatiereZahl(ATM_DRUCK_BAR, 2)} bar`;
+      elemente.absoluteDisplay.textContent = `${formatiereZahl(werte.absolutdruckBar, 2)} bar`;
+      elemente.holdingForceDisplay.textContent = kraftrichtung === "keine Richtung"
+        ? `${formatiereZahl(haltekraftBetrag, 0)} N`
+        : `${formatiereZahl(haltekraftBetrag, 0)} N ${kraftrichtung}`;
+
+      elemente.stateBox.className = `state-box ${druckart.klasse}`;
+      elemente.stateBox.textContent = druckart.titel;
+
+      elemente.interpretationText.textContent =
+        `${druckart.text} Durch die aktuelle Kolbenstellung ergibt sich ein Volumen von ${formatiereZahl(werte.volumenLiter, 1)} L ` +
+        `und eine Druckdifferenz von ${formatiereZahl(werte.differenzdruckBar, 2)} bar. ` +
+        `Um den Kolben in dieser Lage festzuhalten, wäre ${krafthinweis}.`;
+
+      elemente.formulaLine.textContent =
+        `F_H = Δp · A = ${formatiereZahl(werte.differenzdruckBar, 2)} bar · ${werte.flaecheCm2} cm² · 10 = ${formatiereZahl(werte.haltekraftNewton, 0)} N; umgestellt: Δp = F_H / A`;
+
+      elemente.svgVolumeText.textContent = `V = ${formatiereZahl(werte.volumenLiter, 1)} L`;
+      elemente.svgPressureText.textContent = `p_abs = ${formatiereZahl(werte.absolutdruckBar, 2)} bar`;
+      elemente.svgFormulaText.textContent =
+        `F_H = Δp · A = ${formatiereZahl(werte.haltekraftNewton, 0)} N`;
+
+      aktualisiereSvg(werte);
+    }
+
+    function stelleAusgangszustandWiederHer() {
+      elemente.positionSlider.value = STANDARDWERTE.positionProzent;
+      elemente.areaSlider.value = STANDARDWERTE.flaecheCm2;
+      aktualisiereAnzeige();
+    }
+
+    elemente.positionSlider.addEventListener("input", aktualisiereAnzeige);
+    elemente.areaSlider.addEventListener("input", aktualisiereAnzeige);
+    elemente.resetButton.addEventListener("click", stelleAusgangszustandWiederHer);
+
+    aktualisiereAnzeige();
+  </script>
+</body>
+</html>
